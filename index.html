@@ -122,10 +122,9 @@
         }
       };
       console.log(JSON.stringify(payload));
-      const res = await fetch(endpoint, {
+      const res = await fetch("https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/authorization/unauthenticated/access-token", {
         method: "POST",
         headers: {
-                  'Accept':'*/*',
                   'Content-Type':'application/json',
                  },
         body: JSON.stringify(payload)
