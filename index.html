@@ -127,7 +127,6 @@
         headers: {'Content-Type':'application/json',
                     'Access-Control-Allow-Origin':'*',
                     'Access-Control-Allow-Methods':'POST,PATCH,OPTIONS'},
-        mode: 'no-cors',
         body: JSON.stringify(payload)
       });
 
@@ -147,7 +146,6 @@
           'Access-Control-Allow-Methods':'POST,PATCH,OPTIONS',
           "Authorization": `Bearer ${accessToken}`
         },
-         mode: 'no-cors',
         body: JSON.stringify({})
       });
 
@@ -165,7 +163,6 @@
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`
         },
-         mode: 'no-cors',
         body: JSON.stringify({ userId })
       });
 
@@ -198,7 +195,6 @@
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`
         },
-         mode: 'no-cors',
         body: JSON.stringify({
           userId,
           sessionId,
