@@ -124,7 +124,9 @@
 
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {'Content-Type':'application/json',
+                    'Access-Control-Allow-Origin':'*',
+                    'Access-Control-Allow-Methods':'POST,PATCH,OPTIONS'},
         body: JSON.stringify(payload)
       });
 
