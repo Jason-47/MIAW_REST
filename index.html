@@ -108,7 +108,7 @@
     }
 
     async function getAccessToken() {
-      const endpoint = "https://apaccloudconsultingservice2-dev-ed.develop.my.salesforce-scrt.com/iamessage/api/v2/authorization/unauthenticated/access-token";
+      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/authorization/unauthenticated/access-token";
 
       const payload = {
         orgId: "00DdM000005IUC1",
@@ -137,7 +137,7 @@
     }
 
     async function createMessagingUser() {
-      const endpoint = "https://apaccloudconsultingservice2-dev-ed.develop.my.salesforce-scrt.com/iamessage/api/v1/messaging/users";
+      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/users";
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -155,7 +155,7 @@
     }
 
     async function createMessagingSession() {
-      const endpoint = `https://apaccloudconsultingservice2-dev-ed.develop.my.salesforce-scrt.com/iamessage/api/v1/messaging/sessions`;
+      const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/sessions`;
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -188,7 +188,7 @@
     }
 
     async function sendUserMessage(message) {
-      const endpoint = `https://apaccloudconsultingservice2-dev-ed.develop.my.salesforce-scrt.com/iamessage/api/v1/messaging/messages`;
+      const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/messages`;
 
       await fetch(endpoint, {
         method: "POST",
@@ -219,7 +219,7 @@
 
     async function pollMessages() {
       setInterval(async () => {
-        const endpoint = `https://apaccloudconsultingservice2-dev-ed.develop.my.salesforce-scrt.com/iamessage/api/v1/messaging/messages?userId=${userId}&sessionId=${sessionId}`;
+        const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/messages?userId=${userId}&sessionId=${sessionId}`;
 
         const res = await fetch(endpoint, {
           method: "GET",
