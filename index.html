@@ -129,6 +129,7 @@
       });
 
       const data = await res.json();
+      console.log("access token"+ data.accessToken);
       accessToken = data.accessToken;
     }
 
@@ -145,6 +146,7 @@
       });
 
       const data = await res.json();
+      console.log("data## "+ data);
       userId = data.userId;
     }
 
