@@ -124,9 +124,10 @@
 
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: {'Content-Type':'application/json',
-                    'Access-Control-Allow-Origin':'*',
-                    'Access-Control-Allow-Methods':'POST,PATCH,OPTIONS'},
+        headers: {
+                  'Access-Control-Allow-Origin':'*',
+                  'Content-Type':'application/json',
+                 },
         body: JSON.stringify(payload)
       });
 
@@ -143,7 +144,6 @@
         headers: {
           "Content-Type": "application/json",
           'Access-Control-Allow-Origin':'*',
-          'Access-Control-Allow-Methods':'POST,PATCH,OPTIONS',
           "Authorization": `Bearer ${accessToken}`
         },
         body: JSON.stringify({})
@@ -160,6 +160,7 @@
       const res = await fetch(endpoint, {
         method: "POST",
         headers: {
+          'Access-Control-Allow-Origin':'*',
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`
         },
@@ -192,6 +193,7 @@
       await fetch(endpoint, {
         method: "POST",
         headers: {
+          'Access-Control-Allow-Origin':'*',
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`
         },
@@ -222,6 +224,7 @@
         const res = await fetch(endpoint, {
           method: "GET",
           headers: {
+             'Access-Control-Allow-Origin':'*',
             "Authorization": `Bearer ${accessToken}`
           }
         });
