@@ -115,13 +115,13 @@
         esDeveloperName: "MIAW_REST",
         capabilitiesVersion: "1",
         platform: "Web",
-        deviceId: crypto.randomUUID(),
+        deviceId: (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)),
         context: {
           appName: "customChatApp",
           clientVersion: "1.0.0"
         }
       };
-
+      console.log(JSON.stringify(payload));
       const res = await fetch(endpoint, {
         method: "POST",
         headers: {
