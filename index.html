@@ -7,9 +7,8 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f4f6f9;
     }
-    #chatbox {
+    #chatbox, #prechatForm {
       width: 360px;
-      height: 500px;
       display: none;
       flex-direction: column;
       border-radius: 10px;
@@ -20,6 +19,9 @@
       background-color: white;
       overflow: hidden;
       border: 1px solid #d8dde6;
+    }
+    #chatbox {
+      height: 500px;
     }
     #chatHeader {
       background-color: #0070d2;
@@ -43,13 +45,11 @@
     }
     .user {
       background-color: #e3f3ff;
-      align-self: flex-end;
       float: right;
     }
     .agent {
       background-color: #ffffff;
       border: 1px solid #d8dde6;
-      align-self: flex-start;
       float: left;
     }
     #chatInputContainer {
@@ -75,11 +75,33 @@
     button:hover {
       background-color: #005fb2;
     }
+    #prechatForm form {
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+    }
+    #prechatForm input {
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
 
-  <button onclick="openChat()">Chat with Us</button>
+  <button onclick="showPrechat()">Chat with Us</button>
+
+  <div id="prechatForm">
+    <div id="chatHeader">Start Chat</div>
+    <form onsubmit="submitPrechat(event)">
+      <input type="text" id="firstName" placeholder="First Name" required />
+      <input type="text" id="lastName" placeholder="Last Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="subject" placeholder="Subject" required />
+      <button type="submit">Start Chat</button>
+    </form>
+  </div>
 
   <div id="chatbox">
     <div id="chatHeader">Live Chat Support</div>
@@ -90,76 +112,71 @@
   </div>
 
   <script>
-    let accessToken = "";
-    let userId = "";
-    let sessionId = "";
+    let accessToken = "", userId = "", sessionId = "";
 
-    async function openChat() {
-      document.getElementById("chatbox").style.display = "flex";
-      await startChat();
+    function showPrechat() {
+      document.getElementById("prechatForm").style.display = "flex";
     }
 
-    async function startChat() {
+    async function submitPrechat(event) {
+      event.preventDefault();
+
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+
+      document.getElementById("prechatForm").style.display = "none";
+      document.getElementById("chatbox").style.display = "flex";
+
       await getAccessToken();
-      //await createMessagingUser();
-      //await createMessagingSession();
-      //await sendInitialMessage("An agent will be with you shortly...");
-      //pollMessages();
+      await createMessagingUser();
+      await createMessagingSession();
+
+      await createConversation(firstName, lastName, email, subject);
     }
 
     async function getAccessToken() {
-      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/authorization/unauthenticated/access-token";
-
       const payload = {
         orgId: "00D7F000001Z0fO",
         esDeveloperName: "MIAW_REST",
         capabilitiesVersion: "1",
         platform: "Web",
-        deviceId: (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)),
+        deviceId: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
         context: {
           appName: "customChatApp",
           clientVersion: "1.0.0"
         }
       };
-      console.log(JSON.stringify(payload));
+
       const res = await fetch("https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/authorization/unauthenticated/access-token", {
         method: "POST",
-        headers: {
-                  'Content-Type':'application/json',
-                 },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       const data = await res.json();
-      console.log("access token"+ data.accessToken);
       accessToken = data.accessToken;
     }
 
     async function createMessagingUser() {
-      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/users";
-
-      const res = await fetch(endpoint, {
+      const res = await fetch("https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          'Access-Control-Allow-Origin':'*',
           "Authorization": `Bearer ${accessToken}`
         },
         body: JSON.stringify({})
       });
 
       const data = await res.json();
-      console.log("data## "+ data);
       userId = data.userId;
     }
 
     async function createMessagingSession() {
-      const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/sessions`;
-
-      const res = await fetch(endpoint, {
+      const res = await fetch("https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/sessions", {
         method: "POST",
         headers: {
-          'Access-Control-Allow-Origin':'*',
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`
         },
@@ -170,8 +187,31 @@
       sessionId = data.sessionId;
     }
 
-    async function sendInitialMessage(message) {
-      await sendUserMessage(message);
+    async function createConversation(firstName, lastName, email, subject) {
+      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/conversations";
+
+      const payload = {
+        userId,
+        sessionId,
+        customAttributes: {
+          FirstName: firstName,
+          LastName: lastName,
+          Email: email,
+          Subject: subject
+        }
+      };
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      console.log("Conversation created: ", data);
     }
 
     async function handleKey(event) {
@@ -187,12 +227,11 @@
     }
 
     async function sendUserMessage(message) {
-      const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/messages`;
+      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/messages";
 
       await fetch(endpoint, {
         method: "POST",
         headers: {
-          'Access-Control-Allow-Origin':'*',
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`
         },
@@ -211,30 +250,8 @@
       const msgEl = document.createElement("div");
       msgEl.className = "message " + sender;
       msgEl.innerText = msg;
-      const chatMessages = document.getElementById("chatMessages");
-      chatMessages.appendChild(msgEl);
+      document.getElementById("chatMessages").appendChild(msgEl);
       msgEl.scrollIntoView({ behavior: "smooth" });
-    }
-
-    async function pollMessages() {
-      setInterval(async () => {
-        const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/messages?userId=${userId}&sessionId=${sessionId}`;
-
-        const res = await fetch(endpoint, {
-          method: "GET",
-          headers: {
-             'Access-Control-Allow-Origin':'*',
-            "Authorization": `Bearer ${accessToken}`
-          }
-        });
-
-        const data = await res.json();
-        data.messages.forEach(msg => {
-          if (msg.direction === "Inbound") {
-            appendMessage(msg.text, "agent");
-          }
-        });
-      }, 3000);
     }
   </script>
 
