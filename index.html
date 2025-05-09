@@ -7,8 +7,51 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f4f6f9;
     }
-    #chatbox, #prechatForm {
+	  
+	  #chatMenu {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#menuButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  left: 0;
+  top: 100%;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  font-size: 14px;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+.show { display: block; }
+	  
+    #chatbox {
       width: 360px;
+      height: 500px;
       display: none;
       flex-direction: column;
       border-radius: 10px;
@@ -20,16 +63,53 @@
       overflow: hidden;
       border: 1px solid #d8dde6;
     }
-    #chatbox {
-      height: 500px;
-    }
     #chatHeader {
       background-color: #0070d2;
       color: white;
       padding: 10px;
       font-weight: bold;
       text-align: center;
+      position: relative;
     }
+	  
+	  /* Prechat form styles */
+    #prechatForm {
+      padding: 20px;
+      background: #f4f6f9;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    .prechat-input {
+      margin: 10px 0;
+    }
+    .prechat-input label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    .prechat-input input,
+    .prechat-input textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d8dde6;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    #prechatForm button {
+      width: 100%;
+      background-color: #0070d2;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    #prechatForm button:hover {
+      background-color: #005fb2;
+    }
+	  
+	  
     #chatMessages {
       flex-grow: 1;
       overflow-y: auto;
@@ -75,36 +155,76 @@
     button:hover {
       background-color: #005fb2;
     }
-    #prechatForm form {
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
+    #closeChat {
+      background: none;
+      border: none;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2em;
     }
-    #prechatForm input {
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+    .typing-indicator {
+      display: inline-block;
+      padding: 8px 12px;
+    }
+    .typing-indicator span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin-right: 3px;
+      background-color: #666;
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes typing {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
     }
   </style>
 </head>
 <body>
+ <button onclick="openChat()">Chat with Us</button>
 
-  <button onclick="showPrechat()">Chat with Us</button>
-
-  <div id="prechatForm">
-    <div id="chatHeader">Start Chat</div>
-    <form onsubmit="submitPrechat(event)">
-      <input type="text" id="firstName" placeholder="First Name" required />
-      <input type="text" id="lastName" placeholder="Last Name" required />
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="text" id="subject" placeholder="Subject" required />
-      <button type="submit">Start Chat</button>
+<div id="chatbox">
+    <div id="chatHeader">
+      Live Chat Support
+      <div id="chatMenu">
+        <button id="menuButton">⋮</button>
+        <div id="menuDropdown" class="dropdown-content">
+          <a href="#" onclick="requestTranscript()">Request Chat Transcript</a>
+          <a href="#" onclick="endConversation()">End Chat</a>
+        </div>
+      </div>
+      <button id="closeChat" onclick="closeChat()">×</button>
+    </div>
+    
+    <form id="prechatForm">
+      <div class="prechat-input">
+        <label for="firstName">First Name</label>
+        <input id="00NGA00000dCByu" type="text" required>
+      </div>
+      <div class="prechat-input">
+        <label for="lastName">Last Name</label>
+        <input id="00NGA00000dCByz" type="text" required>
+      </div>
+      <div class="prechat-input">
+        <label for="email">Email</label>
+        <input id="email" type="email" required>
+      </div>
+      <div class="prechat-input">
+        <label for="subject">Subject</label>
+        <input id="subject" type="text" required>
+      </div>
+      <button type="button" onclick="submitPrechatForm()">Request Chat</button>
     </form>
-  </div>
 
-  <div id="chatbox">
-    <div id="chatHeader">Live Chat Support</div>
     <div id="chatMessages"></div>
     <div id="chatInputContainer">
       <input id="chatInput" type="text" placeholder="Type your message..." onkeydown="handleKey(event)">
@@ -112,148 +232,397 @@
   </div>
 
   <script>
-    let accessToken = "", userId = "", sessionId = "";
+    let accessToken = "";
+    let userId = "";
+    let conversationId = "";
+    let sseController;
+    let typingIndicatorElement = null;
+    let prechatData = {};
+	  
+	  document.getElementById('menuButton').addEventListener('click', function(e) {
+  e.stopPropagation();
+  document.getElementById('menuDropdown').classList.toggle('show');
+});
 
-    function showPrechat() {
-      document.getElementById("prechatForm").style.display = "flex";
+window.addEventListener('click', function(e) {
+  if (!e.target.matches('#menuButton')) {
+    const dropdowns = document.getElementsByClassName('dropdown-content');
+    for (let i = 0; i < dropdowns.length; i++) {
+      const openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+});
+
+    function openChat() {
+      document.getElementById("chatbox").style.display = "flex";
+      document.getElementById("prechatForm").style.display = "block";
+      document.getElementById("chatMessages").style.display = "none";
+      document.getElementById("chatInputContainer").style.display = "none";
     }
 
-    async function submitPrechat(event) {
-      event.preventDefault();
+    async function submitPrechatForm() {
+      // Collect form data
+ prechatData = {
+    firstName: document.getElementById("00NGA00000dCByu").value,
+    lastName: document.getElementById("00NGA00000dCByz").value,
+    email: document.getElementById("email").value,
+    subject: document.getElementById("subject").value
+  };
 
-      const firstName = document.getElementById("firstName").value.trim();
-      const lastName = document.getElementById("lastName").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const subject = document.getElementById("subject").value.trim();
+  // Validate form
+  if (!prechatData.firstName || !prechatData.lastName || 
+      !prechatData.email || !prechatData.subject) {
+    alert("Please fill all required fields");
+    return;
+  }
 
+
+      // Switch to chat interface
       document.getElementById("prechatForm").style.display = "none";
-      document.getElementById("chatbox").style.display = "flex";
+      document.getElementById("chatMessages").style.display = "block";
+      document.getElementById("chatInputContainer").style.display = "flex";
+      
+      // Start chat initialization
+      try {
+        await getAccessToken();
+        await createConversation();
+        appendMessage("An agent will be with you shortly...", "agent");
+        pollMessages();
+      } catch (error) {
+        console.error("Chat init failed:", error);
+        appendMessage("Sorry, we couldn't start the chat. Please try again later.", "agent");
+      }
+    }
 
-      await getAccessToken();
-      await createMessagingUser();
-      await createMessagingSession();
+function closeChat() {
+  document.getElementById("chatbox").style.display = "none";
+  if (sseController) sseController.abort();
+  hideTypingIndicator();
+  document.getElementById("prechatForm").style.display = "block";
+  document.getElementById("chatMessages").style.display = "none";
+  document.getElementById("chatInputContainer").style.display = "none";
+  document.getElementById("chatMessages").innerHTML = '';
+  // Reset conversation state
+  document.getElementById('chatInput').disabled = false;
+  conversationId = "";
+  userId = "";
+  accessToken = "";
+}
 
-      await createConversation(firstName, lastName, email, subject);
+    function generateUUID() {
+      return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+      );
     }
 
     async function getAccessToken() {
-      const payload = {
-        orgId: "00D7F000001Z0fO",
-        esDeveloperName: "MIAW_REST",
-        capabilitiesVersion: "1",
-        platform: "Web",
-        deviceId: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
-        context: {
-          appName: "customChatApp",
-          clientVersion: "1.0.0"
-        }
-      };
-
-      const res = await fetch("https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/authorization/unauthenticated/access-token", {
+      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/authorization/unauthenticated/access-token";
+      
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          orgId: "00D7F000001Z0fO",
+          esDeveloperName: "MIAW_REST",
+          capabilitiesVersion: "1",
+          platform: "Web"
+        })
       });
 
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      
       const data = await res.json();
+		console.log('Data:', data);
       accessToken = data.accessToken;
+      userId = data.context.endUser.subject.split('uid:')[1];
+	  console.log('User Id:', userId);
     }
 
-    async function createMessagingUser() {
-      const res = await fetch("https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({})
-      });
-
-      const data = await res.json();
-      userId = data.userId;
-    }
-
-    async function createMessagingSession() {
-      const res = await fetch("https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/sessions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({ userId })
-      });
-
-      const data = await res.json();
-      sessionId = data.sessionId;
-    }
-
-    async function createConversation(firstName, lastName, email, subject) {
-      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/conversations";
-
-      const payload = {
-        userId,
-        sessionId,
-        customAttributes: {
-          FirstName: firstName,
-          LastName: lastName,
-          Email: email,
-          Subject: subject
-        }
-      };
-
+    async function createConversation() {
+      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/conversation";
+      
       const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`
         },
+        body: JSON.stringify({
+          conversationId: userId,
+          esDeveloperName: "MIAW_REST",
+          routingAttributes: {
+            "_firstName": prechatData.firstName,
+            "_lastName": prechatData.lastName,
+            "_email": prechatData.email,
+            "_subject": prechatData.subject
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errorText}`);
+      }
+
+      conversationId = userId;
+    }
+async function pollMessages() {
+  const sseUrl = 'https://maneendranath-dev-ed.my.salesforce-scrt.com/eventrouter/v1/sse';
+  sseController = new AbortController();
+
+  try {
+    const response = await fetch(sseUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'X-Org-Id': '00D7F000001Z0fO',
+        'Accept': 'text/event-stream'
+      },
+      signal: sseController.signal
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+
+      const events = buffer.split(/\n\n/);
+      buffer = events.pop() || '';
+
+      for (const eventData of events) {
+        let eventType = '';
+        const dataParts = [];
+        
+        const lines = eventData.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('event:')) {
+            eventType = line.substring(6).trim();
+          } else if (line.startsWith('data:')) {
+            dataParts.push(line.substring(5).trim());
+          }
+        }
+
+        if (eventType === 'CONVERSATION_MESSAGE') {
+          const data = dataParts.join('\n');
+          try {
+            const jsonData = JSON.parse(data);
+            console.log('Filtered CONVERSATION_MESSAGE:', jsonData);
+            if (jsonData.conversationEntry?.sender?.appType === 'agent' || jsonData.conversationEntry?.sender?.appType === 'conversation') {
+              try {
+                const payload = JSON.parse(jsonData.conversationEntry.entryPayload);
+				console.log('AGENT MESSAGE:', payload);
+                if (payload.abstractMessage?.staticContent?.text) {
+                  const messageText = payload.abstractMessage.staticContent.text;
+				  console.log('Filtered AGENT MESSAGE:', messageText);
+                  appendMessage(messageText, 'agent');
+                }
+              } catch(innerError) {
+                console.error('Error processing agent message:', innerError);
+              }
+            }
+            
+          } catch(e) {
+            console.error('Error parsing JSON data:', e);
+          }
+        }
+      }
+    }
+  } catch(error) {
+    if (error.name !== 'AbortError') {
+      console.error('SSE Error:', error);
+      setTimeout(pollMessages, 5000);
+    }
+  }
+}
+
+    function handleEvent(event) {
+      console.log('Received event:', event);
+      
+      if (!event || !event.conversationEntry) {
+        console.log('Skipping non-conversation event');
+        return;
+      }
+
+      const entry = event.conversationEntry;
+      console.log('Processing entry type:', entry.entryType);
+
+      switch(entry.entryType) {
+        case 'Message':
+          handleMessageEvent(entry);
+          break;
+        case 'TypingStartedIndicator':
+          showTypingIndicator();
+          break;
+        case 'TypingStoppedIndicator':
+          hideTypingIndicator();
+          break;
+        default:
+          console.log('Unhandled entry type:', entry.entryType);
+      }
+    }
+function handleMessageEvent(entry) {
+  try {
+    const payload = JSON.parse(entry.entryPayload);
+    if (payload.abstractMessage?.staticContent?.text) {
+      const messageText = payload.abstractMessage.staticContent.text;
+		console.log('Message Text:', messageText);
+      const sender = entry.sender;
+
+      // Skip current user's messages
+      if (sender.role === 'EndUser' && sender.appType === 'iamessage') {
+        const expectedSubject = `v2/iamessage/UNAUTH/NA/uid:${userId}`;
+        console.log('Expected Subject:', expectedSubject);
+        if (sender.subject === expectedSubject) return;
+      }
+
+      // Determine sender type
+      const senderType = sender.appType === 'agent' ? 'agent' : 'user';
+     console.log('Sender Type:', senderType);
+      appendMessage(messageText, senderType);
+    }
+  } catch(e) {
+    console.error('Error processing message:', e);
+  }
+}
+    function showTypingIndicator() {
+      if (!typingIndicatorElement) {
+        const messageContainer = document.getElementById("chatMessages");
+        typingIndicatorElement = document.createElement("div");
+        typingIndicatorElement.className = "message agent";
+        typingIndicatorElement.innerHTML = `
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        `;
+        messageContainer.appendChild(typingIndicatorElement);
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+      }
+    }
+
+    function hideTypingIndicator() {
+      if (typingIndicatorElement) {
+        typingIndicatorElement.remove();
+        typingIndicatorElement = null;
+      }
+    }
+
+    async function sendMessageToAPI(messageText) {
+      const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/conversation/${conversationId}/message`;
+      
+      const payload = {
+        message: {
+          id: generateUUID(),
+          messageType: "StaticContentMessage",
+          staticContent: {
+            formatType: "Text",
+            text: messageText
+          }
+        },
+        esDeveloperName: "MIAW_REST",
+        isNewMessagingSession: false,
+        language: ""
+      };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
         body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
-      console.log("Conversation created: ", data);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    }
+		
+	async function requestTranscript() {
+  try {
+    const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/conversation/${conversationId}/transcript?esDeveloperName=MIAW_REST`;
+    
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to get transcript');
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat_transcript_${conversationId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Transcript request failed:', error);
+    appendMessage('Failed to download transcript. Please try again.', 'agent');
+  }
+}
+
+async function endConversation() {
+  try {
+    const endpoint = `https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v2/conversation/${conversationId}?esDeveloperName=MIAW_REST`;
+    
+    const response = await fetch(endpoint, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to end conversation');
+    
+    appendMessage('This conversation has been ended. Please start a new chat if you need further assistance.', 'agent');
+    document.getElementById('chatInput').disabled = true;
+    if (sseController) sseController.abort();
+  } catch (error) {
+    console.error('End conversation failed:', error);
+    appendMessage('Failed to end conversation. Please try again.', 'agent');
+  }
+}
+
+    function appendMessage(text, sender) {
+      const messageContainer = document.getElementById("chatMessages");
+      const messageElement = document.createElement("div");
+      messageElement.className = `message ${sender}`;
+      messageElement.textContent = text;
+      messageContainer.appendChild(messageElement);
+      messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 
     async function handleKey(event) {
       if (event.key === "Enter") {
-        const input = document.getElementById("chatInput");
+        const input = event.target;
         const message = input.value.trim();
         if (message) {
           appendMessage(message, "user");
           input.value = "";
-          await sendUserMessage(message);
+          
+          try {
+            await sendMessageToAPI(message);
+          } catch (error) {
+            console.error("Message send failed:", error);
+            appendMessage("Failed to send message. Please try again.", "agent");
+          }
         }
       }
     }
-
-    async function sendUserMessage(message) {
-      const endpoint = "https://maneendranath-dev-ed.my.salesforce-scrt.com/iamessage/api/v1/messaging/messages";
-
-      await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          userId,
-          sessionId,
-          message: {
-            type: "text",
-            text: message
-          }
-        })
-      });
-    }
-
-    function appendMessage(msg, sender) {
-      const msgEl = document.createElement("div");
-      msgEl.className = "message " + sender;
-      msgEl.innerText = msg;
-      document.getElementById("chatMessages").appendChild(msgEl);
-      msgEl.scrollIntoView({ behavior: "smooth" });
-    }
   </script>
-
 </body>
 </html>
